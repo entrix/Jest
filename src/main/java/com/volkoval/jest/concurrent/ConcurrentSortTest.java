@@ -1,4 +1,4 @@
-package com.volkoval.jset.concurrent;
+package com.volkoval.jest.concurrent;
 
 import org.junit.Test;
 

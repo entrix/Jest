@@ -1,4 +1,4 @@
-package com.volkoval.jset.io;
+package com.volkoval.jest.io;
 
 import org.junit.Before;
 import org.junit.Test;

@@ -1,4 +1,4 @@
-package com.volkoval.jset.apache.commons.mail;
+package com.volkoval.jest.apache.commons.mail;
 
 /**
  * Created with IntelliJ IDEA.

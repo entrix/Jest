@@ -1,4 +1,4 @@
-package com.volkoval.jset.apache.commons.mail;
+package com.volkoval.jest.apache.commons.mail;
 
 import org.apache.commons.mail.EmailException;
 import org.apache.commons.mail.MultiPartEmail;
