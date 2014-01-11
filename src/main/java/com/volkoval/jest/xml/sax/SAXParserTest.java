@@ -30,7 +30,7 @@ public class SAXParserTest {
             xmlReader = saxParser.getXMLReader();
             FB2Handler retriever = new FB2Handler();
             xmlReader.setContentHandler(retriever);
-            xmlReader.parse("doc/fb2/Gertruda.fb2");
+            xmlReader.parse(convertToFileURL("doc/fb2/Gertruda.fb2"));
         } catch (ParserConfigurationException e) {
             e.printStackTrace();
         } catch (SAXException e) {
