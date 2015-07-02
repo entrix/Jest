@@ -8,10 +8,10 @@ import java.util.ArrayDeque;
  * Date: 01.07.15
  * Time: 17:13
  */
-public class Ast {
+public class AstTree {
     AstNode rootNode;
 
-    public Ast(AstNode rootNode) {
+    public AstTree(AstNode rootNode) {
         this.rootNode = rootNode;
     }
 

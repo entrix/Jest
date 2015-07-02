@@ -1,7 +1,5 @@
 package com.volkoval.jest.ast;
 
-import org.junit.Test;
-
 import java.util.ArrayDeque;
 import java.util.List;
 
@@ -11,19 +9,15 @@ import java.util.List;
  * Date: 01.07.15
  * Time: 17:11
  */
-public class AstBuilder {
+public abstract class AstLispBuilder {
 
-    public Ast buildFromStringSource(String source) {
-        if (source == null) {
-            return null;
-        }
-        return new Ast(
-                constructInfixList(
-                        StringOperandTokenizer.parse(source)));
-    }
+    protected OperandTokenizer tokenizer = new OperandTokenizer();
 
-    private AstNode constructInfixList(List<String> tokens) {
-        ArrayDeque<AstNode> nodes = new ArrayDeque<>();
+    public abstract AstTree build();
+
+    protected ArrayDeque<AstNode> constructInfixList(List<String> tokens, ArrayDeque<AstNode> prevNodes) {
+        ArrayDeque<AstNode> nodes = prevNodes == null ?
+                new ArrayDeque<AstNode>() : prevNodes;
         boolean hasPrevOp = false;
         for (String token : tokens) {
             Operand operand = null;
@@ -72,9 +66,8 @@ public class AstBuilder {
                 hasPrevOp = true;
             }
         }
-        return nodes.poll();
+        return nodes;
     }
-
     private boolean isGroup(String token) {
         if (token.equals("(") || token.equals(")")) {
             return true;
@@ -82,9 +75,4 @@ public class AstBuilder {
         return false;
     }
 
-    @Test
-    public void test() {
-        Ast ast = buildFromStringSource("a + b + c * (v + w)");
-        System.out.println(ast);
-    }
 }
