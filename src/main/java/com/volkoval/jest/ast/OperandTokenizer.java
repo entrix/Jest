@@ -16,23 +16,7 @@ public class OperandTokenizer {
         final char buf[] = source.toCharArray();
         final int len = buf.length;
 
-        for (int i = 0; i < len;) {
-            StringBuilder token = new StringBuilder();
-            while(i < buf.length && !isOperand(buf[i])) {
-                if (buf[i] == '(' || buf[i] == ')') {
-                    tokens.add(new Character(buf[i]).toString());
-                }
-                i++;
-            }
-            while(i < buf.length && isOperand(buf[i])) {
-                token.append(buf[i]);
-                i++;
-            }
-            if (token.length() > 0) {
-                tokens.add(token.toString());
-            }
-        }
-        return tokens;
+        return parse(buf);
     }
 
     public List<String> parse(char buf[]) {
@@ -46,6 +30,14 @@ public class OperandTokenizer {
                     tokens.add(new Character(buf[i]).toString());
                 }
                 i++;
+            }
+            // ignore comments
+            if (i < buf.length && buf[i] == ';') {
+                while (buf[i] != '\n') {
+                    i++;
+                }
+                i++;
+                continue;
             }
             while(i < buf.length && isOperand(buf[i])) {
                 token.append(buf[i]);

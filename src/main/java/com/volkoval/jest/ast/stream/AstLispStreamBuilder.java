@@ -1,7 +1,7 @@
 package com.volkoval.jest.ast.stream;
 
 import com.volkoval.jest.ast.AstLispBuilder;
-import com.volkoval.jest.ast.AstNode;
+import com.volkoval.jest.ast.AbstractAstNode;
 import com.volkoval.jest.ast.AstTree;
 
 import java.util.ArrayDeque;
@@ -28,7 +28,7 @@ public class AstLispStreamBuilder extends AstLispBuilder {
     public AstTree build() {
         char[] buf = null;
         List<String> tokens = null;
-        ArrayDeque<AstNode> nodes = new ArrayDeque<>();
+        ArrayDeque<AbstractAstNode> nodes = new ArrayDeque<>();
         try {
             while ((buf = reader.getBuf()) != null) {
                 tokens = new LinkedList<>(tokenizer.parse(buf));

@@ -1,6 +1,7 @@
 package com.volkoval.jest.ast;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -15,59 +16,76 @@ public abstract class AstLispBuilder {
 
     public abstract AstTree build();
 
-    protected ArrayDeque<AstNode> constructInfixList(List<String> tokens, ArrayDeque<AstNode> prevNodes) {
-        ArrayDeque<AstNode> nodes = prevNodes == null ?
-                new ArrayDeque<AstNode>() : prevNodes;
-        boolean hasPrevOp = false;
+    protected ArrayDeque<AbstractAstNode> constructInfixList(List<String> tokens, ArrayDeque<AbstractAstNode> prevNodes) {
+        ArrayDeque<AbstractAstNode> nodes = prevNodes == null ?
+                new ArrayDeque<AbstractAstNode>() : prevNodes;
+        boolean hasPrevBrace = false;
+        int braceCount = 0;
         for (String token : tokens) {
-            Operand operand = null;
-            if (Operand.isOperand(token)) {
-                operand = Operand.getOperand(token);
-            }
-            if (operand == null) {
-                if (hasPrevOp) {
-                    if (isGroup(token)) {
-                        if (token.equals("(")) {
-                            hasPrevOp = false;
-                        }
-                        else {
-                            throw new RuntimeException("invalid expr before ')'");
-                        }
+            if (isGroup(token)) {
+                if (token.equals("(")) {
+                    if (!hasPrevBrace) {
+                        hasPrevBrace = true;
                     }
-                    else {
-                        OperatorNode op = (OperatorNode) nodes.pollLast();
-                        AstNode argOne = nodes.pollLast();
-                        AstNode argTwo = new OperandNode(token);
-                        op.setNodes(argOne, argTwo);
-                        nodes.addLast(op);
-                        hasPrevOp = false;
-                    }
+                    braceCount++;
+                    nodes.addLast(new AstNode(token));
                 }
                 else {
-                    if (isGroup(token)) {
-                        if (token.equals("(")) {
-                            throw new RuntimeException("invalid expr before '('");
-                        }
-                        else {
-                            AstNode argOne = nodes.pollLast();
-                            OperatorNode op = (OperatorNode) nodes.pollLast();
-                            AstNode argTwo = nodes.pollLast();
-                            op.setNodes(argOne, argTwo);
-                            nodes.addLast(op);
-                        }
+                    if (!hasPrevBrace) {
+                        throw new RuntimeException("invalid expr before ')'");
                     }
-                    else {
-                        nodes.addLast(new OperandNode(token));
-                    }
+                    reverseConstruct(nodes);
+                    braceCount--;
                 }
             }
             else {
-                nodes.addLast(new OperatorNode(operand));
-                hasPrevOp = true;
+                MathOperand mathOperand = null;
+                if (MathOperand.isOperand(token)) {
+                    mathOperand = MathOperand.getOperand(token);
+                    nodes.addLast(new MathOperatorNode(mathOperand));
+                }
+                else {
+                    nodes.addLast(new AstNode(token));
+                }
             }
+        }
+        if (braceCount > 0) {
+            throw new RuntimeException("The count of '(' braces doesn't equl to count of ')' braces");
         }
         return nodes;
     }
+
+    private void reverseConstruct(ArrayDeque<AbstractAstNode> nodes) {
+        List<AbstractAstNode> opNodeArgs = new ArrayList<>();
+        try {
+            do {
+                if (nodes.size() == 0) {
+                    throw new RuntimeException("Open brace '(' not found.");
+                }
+                opNodeArgs.add(nodes.removeLast());
+            } while (!nodes.getLast().evaluate().equals("("));
+            // remove brace '('
+            nodes.pollLast();
+            // construct operator
+            AbstractAstNode opNode = opNodeArgs.remove(opNodeArgs.size() - 1);
+            // add operator back to the queue
+            nodes.add(constructOperator(opNode, opNodeArgs));
+        } catch (ClassCastException ex) {
+            throw new RuntimeException("We haven't got operator node at the head of list");
+        }
+    }
+
+    private AbstractAstNode constructOperator(AbstractAstNode headNode, List<AbstractAstNode> tailNodes) {
+        if (headNode.getNodes() == null) {
+            headNode.setNodes(tailNodes);
+            return headNode;
+        }
+        AstNode rootNode = new AstNode(headNode);
+        List<AbstractAstNode> childNodes = new ArrayList<>(tailNodes);
+        rootNode.setNodes(childNodes);
+        return rootNode;
+    }
+
     private boolean isGroup(String token) {
         if (token.equals("(") || token.equals(")")) {
             return true;

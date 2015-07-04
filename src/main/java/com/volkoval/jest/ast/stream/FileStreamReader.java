@@ -20,7 +20,7 @@ public class FileStreamReader {
 
     private char[] storageBuf = new char[BUF_SIZE];
 
-    private Queue<byte[]> queue = new LinkedList<>();
+    private Queue<char[]> queue = new LinkedList<>();
 
     private static final int BUF_SIZE = 4096;
 
@@ -30,14 +30,14 @@ public class FileStreamReader {
             byte[] buf = new byte[BUF_SIZE];
             while (is.available() > 0) {
                 is.read(buf);
-                queue.add(buf.clone());
-                copyBuf();
+                copyBuf(buf);
             }
-            queue.add(buf.clone());
             while (!queue.isEmpty() && isRead) {
                 wait();
-                copyBuf();
+                isRead = true;
+                notify();
             }
+            // last release
             isFinished = true;
             notify();
         } catch (FileNotFoundException e) {
@@ -49,13 +49,15 @@ public class FileStreamReader {
         }
     }
 
-    private synchronized void copyBuf() throws InterruptedException {
+    private synchronized void copyBuf(byte[] buf) throws InterruptedException {
+
+        char[] localBuf = new char[BUF_SIZE];
+        for (int i = 0; i < buf.length; ++i) {
+            localBuf[i] = (char) buf[i];
+        }
+        queue.add(localBuf);
         if (isRead) {
             return;
-        }
-        byte[] localBuf = queue.poll();
-        for (int i = 0; i < localBuf.length; ++i) {
-            storageBuf[i] = (char) localBuf[i];
         }
         isRead = true;
         try {
@@ -70,13 +72,11 @@ public class FileStreamReader {
         while(!isRead) {
             wait();
         }
+        // we need to return null in order to stop the consume\ing
         if (isFinished) {
             return null;
         }
-        char[] buf = new char[BUF_SIZE];
-        for (int i = 0; i < storageBuf.length; ++i) {
-            buf[i] = storageBuf[i];
-        }
+        char[] buf = queue.poll();
         isRead = false;
         notify();
         return buf;

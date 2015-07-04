@@ -6,13 +6,13 @@ package com.volkoval.jest.ast;
  * Date: 01.07.15
  * Time: 17:08
  */
-public enum Operand {
+public enum MathOperand {
 
     PLUS("+"), MINUS("-"), MULTIPLY("*"), DIVIDE("/"), MOD("%"), POW("^");
 
     String name;
 
-    private Operand(String name) {
+    private MathOperand(String name) {
         this.name = name;
     }
 
@@ -20,10 +20,10 @@ public enum Operand {
         return name;
     }
 
-    public static Operand getOperand(String name) {
-        for (Operand operand : values()) {
-            if (operand.getName().equals(name)) {
-                return operand;
+    public static MathOperand getOperand(String name) {
+        for (MathOperand mathOperand : values()) {
+            if (mathOperand.getName().equals(name)) {
+                return mathOperand;
             }
         }
         return null;
